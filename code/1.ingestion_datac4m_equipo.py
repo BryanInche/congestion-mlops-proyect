@@ -20,14 +20,17 @@ datos_equipo = consultar_postgres_y_obtener_df_c4m(61)
 # datos_equipo_199 = consultar_postgres_y_obtener_df_c4m(199)
 # datos_equipo_201 = consultar_postgres_y_obtener_df_c4m(201)
 
-# 1.Guardamos el df convertido en csv en la variable csv_data
-csv_data = datos_equipo.to_csv(index=False)
+# 1.Guardamos el df en csv en la variable csv_data
+#csv_data = datos_equipo.to_csv(index=False)
+# 1.Guardar el df en formato Parquet en la variable parquet_data
+parquet_data = datos_equipo.to_parquet(engine='pyarrow')
+
 # csv_data_199 = datos_equipo_199.to_csv(index=False)
 # csv_data_201 = datos_equipo_201.to_csv(index=False)
 
 # 1.2 Obtener conection Azure DataLake,interfaz de Azure(Claves de acceso: Key1) (Debes comentar esta variable Si NO deja hacer COMMIT DEL 
 # CODIGO EN GIT,GITHUB)
-# connection_string = 'DefaultEndpointsProtocol=https;AccountName=datalakemlopsd4m;AccountKey=iWT8t74/#XlqcqoR03keDVtFZPzr0PB9zDffMPaLWMUBIAjUww8uYAVkc9xRkcBtvTmUHKBvd1sB3+ASt6mGgcQ==;EndpointSuffix=core.windows.net'
+#connection_string = 'DefaultEndpointsProtocol=https;AccountName=datalakemlopsd4m;AccountKey=iWT8t74/#XlqcqoR03keDVtFZPzr0PB9zDffMPaLWMUBIAjUww8uYAVkc9xRkcBtvTmUHKBvd1sB3+ASt6mGgcQ==;EndpointSuffix=core.windows.net'
 
 # 1.3 Conectar al Blob Storage de Azure
 blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -36,7 +39,9 @@ blob_service_client = BlobServiceClient.from_connection_string(connection_string
 container_name = "raw/proyectocongestion_raw/fuentedatos_c4m/operacion_shougang/datos_equipos_individual/"
 
 ####### !IMPORTANTE!: CAMBIAR EL NOMBRE DEL CSV (PARA EL EQUIPO EN PARTICULAR)  ##########################################################
-blob_name = "datos_raw_shougang_equipo_61.csv"
+#blob_name = "datos_raw_shougang_equipo_61.csv"
+blob_name = "datos_raw_shougang_equipo_61.parquet"
+
 # blob_name_199 = "datos_raw_shougang_equipo_199.csv"
 # blob_name_201 = "datos_raw_shougang_equipo_201.csv"
 
@@ -44,10 +49,12 @@ blob_name = "datos_raw_shougang_equipo_61.csv"
 blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
 # Si existe un archivo con el el mismo nombre, dara error (en ese caso deberias eliminar primero el archivo en el Azure Storage)
 
-# Verificar si existe el archivo
+# 1.6 Verificar si existe el archivo
 if blob_client.exists():
     # Eliminar el archivo existente
     blob_client.delete_blob()
 
-# Cargar el nuevo archivo CSV al Blob Storage
-blob_client.upload_blob(csv_data)
+# 1.7 Cargar el nuevo archivo CSV al Blob Storage
+#blob_client.upload_blob(csv_data)
+# 1.7 Cargar el nuevo archivo Parquet al Blob Storage
+blob_client.upload_blob(parquet_data)

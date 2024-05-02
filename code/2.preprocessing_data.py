@@ -16,13 +16,19 @@ blob_service_client = BlobServiceClient.from_connection_string(connection_string
 
 # 2.1 Identificamos el nombre del contenedor(container_name) y nombre del archivo(definir blob_name) en el Blob Storage
 container_name = "raw/proyectocongestion_raw/fuentedatos_consolidado/"
-blob_name = "datos_raw_shougang_c4m_h4m.csv"
+
+#2.2 nombre del csv
+#blob_name = "datos_raw_shougang_c4m_h4m.csv"
+#2.2 nombre del parquet
+blob_name = "datos_raw_shougang_c4m_h4m.parquet"
 
 # 2.3 Obtener el blob_client
 blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
 
 # 2.4 Leer el contenido del blob como texto
-blob_data = blob_client.download_blob().content_as_text()
+#blob_data = blob_client.download_blob().content_as_text()
+# 2.4 Leer el contenido del blob como un objeto de bytes
+blob_data = blob_client.download_blob().readall()
 
 # 2.5 Especificar tipos de datos al leer el archivo CSV
 column_types = {
@@ -31,7 +37,9 @@ column_types = {
 }
 
 # 2.6 Leer el archivo CSV en un DataFrame de Pandas desde el texto
-datos = pd.read_csv(io.StringIO(blob_data), parse_dates=['instant_date_t', 'Event Date'])
+#datos = pd.read_csv(io.StringIO(blob_data), parse_dates=['instant_date_t', 'Event Date'])
+# 2.6. Leer el archivo PARQUET en un DataFrame de Pandas desde el texto
+datos = pd.read_parquet(io.BytesIO(blob_data), columns=column_types.keys())
 
 
 # 3. Extraer componentes de fecha y hora

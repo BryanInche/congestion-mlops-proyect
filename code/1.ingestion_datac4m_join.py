@@ -25,15 +25,17 @@ dfs = []
 container_name_join = "raw"
 folder_path = "proyectocongestion_raw/fuentedatos_c4m/operacion_shougang/datos_equipos_individual/"
 
-# Obtener la lista de blobs en la carpeta específica del contenedor
+# 3 Obtener la lista de blobs en la carpeta específica del contenedor
 #blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 container_client = blob_service_client.get_container_client(container_name_join)
 blobs = container_client.list_blobs(name_starts_with=folder_path)
 
-# Filtrar los nombres solo de los archivos CSV
-csv_files = [blob.name for blob in blobs if blob.name.endswith('.csv')]
+# 3.1 Filtrar los nombres solo de los archivos CSV
+#csv_files = [blob.name for blob in blobs if blob.name.endswith('.csv')]
+# 3.1 Filtrar los nombres solo de los archivos PARQUET
+csv_files = [blob.name for blob in blobs if blob.name.endswith('.parquet')]
 
-# 6. Leemos cada archivo CSV y guardarlos en DataFrames individuales
+# 4. Leemos cada archivo CSV o PARQUET y guardarlos en DataFrames individuales
 for csv_file in csv_files:
     # Obtener el blob del Blob Storage
     blob_client = blob_service_client.get_blob_client(container=container_name_join, blob=csv_file)
@@ -47,7 +49,9 @@ for csv_file in csv_files:
     bytes_io.seek(0)  # Asegurar que la posición del cursor esté al inicio del archivo
     
     # Leer el archivo CSV en un DataFrame de Pandas desde el objeto BytesIO
-    df = pd.read_csv(bytes_io)
+    #df = pd.read_csv(bytes_io)
+    # Leer el archivo Parquet en un DataFrame de Pandas desde el objeto BytesIO
+    df = pd.read_parquet(bytes_io)
     
     # Agregar el DataFrame a la lista
     dfs.append(df)
@@ -55,14 +59,20 @@ for csv_file in csv_files:
 # 7. Se Concatena todos los DataFrames en uno solo df
 result_df = pd.concat(dfs, ignore_index=True)
 
-# Convertimos el df_consolidado en csv en la variable datos_total para enviarlo al Blob Storage Azure
-datos_total = result_df.to_csv(index=False)
+# 8. Convertimos el df_consolidado en csv en la variable datos_total para enviarlo al Blob Storage Azure
+#datos_total = result_df.to_csv(index=False)
+# 8. Convertimos el df_consolidado en PARQUET en la variable datos_total para enviarlo al Blob Storage Azure
+datos_total = result_df.to_parquet(engine='pyarrow')
 
-# 4. Identificamos el nombre del contenedor(container_name) y nombre del archivo(definir blob_name) en el Blob Storage
+# 9. Identificamos el nombre del contenedor(container_name) y nombre del archivo(definir blob_name) en el Blob Storage
 container_name_consolidado = "raw/proyectocongestion_raw/fuentedatos_c4m/operacion_shougang/datos_equipos_consolidado/"
-blob_name_consolidado = "datos_raw_shougang_c4m.csv"
 
-# 5. Guardar el archivo CSV al Blob Storage
+# 10.Nombre en csv
+#blob_name_consolidado = "datos_raw_shougang_c4m.csv"
+# 10.Nombre en parquet
+blob_name_consolidado = "datos_raw_shougang_c4m.parquet"
+
+# 5. Guardar el archivo CSV o PARQUET al Blob Storage
 blob_client = blob_service_client.get_blob_client(container=container_name_consolidado, blob=blob_name_consolidado)
 
 # Verificar si existe el archivo 
