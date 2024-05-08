@@ -66,7 +66,7 @@ datos = datos.drop(columnas_a_eliminar, axis=1)
 
 # 6. Limpieza de variables No prioritarias
 columnas_a_eliminar = ['columnatestingt', 'marchacod', 'marchacdo','marchadod','marchaddo','id_category_path',
-                       'adelantardo','adelantarod','isunderground']
+                       'adelantardo','adelantarod','isunderground', 'tiem_creac','tiem_update','Event_Date', 'arreglolimites']
 
 # 6.1 Filtrar las columnas que existen en el DataFrame
 columnas_existentes = [col for col in columnas_a_eliminar if col in datos.columns]
@@ -95,7 +95,10 @@ datos = datos.rename(columns=nuevos_nombres)
 
 # Pasos opcionales: Nota (Estos procesos se deben hacer en un notebook por separado para no interunpir el flujo)
 # n.1 Listar todas las bases de datos
-# spark.sql("SHOW DATABASES").show()
+# Ajustar la configuración para mostrar todas las columnas
+#spark.conf.set("spark.sql.repl.eagerEval.enabled", True)
+# n.1 Listar todas las bases de datos
+#spark.sql("SHOW DATABASES").show(truncate=False)
 
 # # n.2 Crear la base de datos si no existe en el almacenamiento de processed (en la ruta donde se almacenaran TablaDelta preprocesados)
 #spark.sql("CREATE DATABASE IF NOT EXISTS dbproyectocongestion_processed LOCATION '/mnt/datalakemlopsd4m/processed/proyectocongestion_processed/'")
@@ -103,13 +106,30 @@ datos = datos.rename(columns=nuevos_nombres)
 # 9. Limpieza de los nombres de las columnas para eliminar caracteres especiales
 datos.columns = [col.replace(" ", "_").replace("-", "_").replace("(", "").replace(")", "").replace("_null", "") for col in datos.columns]
 
-# 10. Convertir el DataFrame de Pandas a un DataFrame de Spark
+# 10. Ajuste de los datos a Series Temporales
+# 10.1 Se establece la columna 'Time' como el índice del DataFrame "datos"
+# datos = datos.set_index('instant_date_t')
+
+# # 10.2 Ordenamos el dataset de forma ascendente segun el datetime
+# datos.sort_index(inplace=True)
+
+# # 10.3 Identificamos la periocidad de la serie temporal
+# df_time_diffs = datos.index.to_series().diff().dt.total_seconds()
+
+# # 10.4 Eliminamos o Filtramos las filas donde la diferencia es distinta de cero (Con ello eliminamos las filas o registros de fechas duplicadas)
+# datos = datos[df_time_diffs != 0]
+
+# # 10.5. # Reinterpolar el dataset con una periosidad en especifico
+# # 'S' o 'seg' : Segundo, 'T' o 'min': Minuto,'H' o 'Hr': Hora,'D': Día,'W': Semana,'M': Mes,'Q': Trimestre,'Y': Año
+# datos = datos.asfreq(freq='T', method='bfill')
+
+# 11. Convertir el DataFrame de Pandas a un DataFrame de Spark
 spark_datos = spark.createDataFrame(datos)
 
-# 11. Guardar los datos preprocesados en una tabla Delta en el Azure Storage 
+# 12. Guardar los datos preprocesados en una tabla Delta en el Azure Storage 
 # Asegurar que las columnas de fecha y hora mantengan sus tipos de datos
 from pyspark.sql.functions import col
-spark_datos = spark_datos.withColumn("Event_Date", col("Event_Date").cast("timestamp"))
+#spark_datos = spark_datos.withColumn("Event_Date", col("Event_Date").cast("timestamp"))
 spark_datos = spark_datos.withColumn("instant_date_t", col("instant_date_t").cast("timestamp"))
 
 # Nombre de la tabla Delta a guardar
@@ -120,5 +140,5 @@ if spark.catalog.tableExists(nombre_tabla_delta):
     # Eliminar la tabla Delta existente
     spark.sql("DROP TABLE IF EXISTS " + nombre_tabla_delta)
 
-# Guardar los datos preprocesados en una tabla Delta
+# 13. Guardar los datos preprocesados en una tabla Delta
 spark_datos.write.format("delta").mode("overwrite").option("mergeSchema", "true").saveAsTable(nombre_tabla_delta)
