@@ -77,11 +77,16 @@ if any([dfs_equipo_fc89, dfs_equipo_fc95, dfs_equipo_fc98]):
     resultado_h4m_allequipos = pd.concat([result_df_fc89, result_df_fc95, result_df_fc98], ignore_index=True)
 
     # Convertir el DataFrame consolidado en un archivo CSV
-    datos_total = resultado_h4m_allequipos.to_csv(index=False)
+    #datos_total = resultado_h4m_allequipos.to_csv(index=False)
+    # Convertir el DataFrame consolidado en un archivo PARQUET
+    datos_total = resultado_h4m_allequipos.to_parquet(engine='pyarrow')
 
     # Subir el archivo CSV al Blob Storage
     container_name_consolidado = "raw/proyectocongestion_raw/fuentedatos_h4m/operacion_shougang/equipos_consolidado/"
-    blob_name_consolidado = "datos_raw_shougang_h4m.csv"
+
+    #blob_name_consolidado = "datos_raw_shougang_h4m.csv"
+    blob_name_consolidado = "datos_raw_shougang_h4m.parquet"
+
     blob_client = blob_service_client.get_blob_client(container=container_name_consolidado, blob=blob_name_consolidado)
 
     # Verificar si existe el archivo 

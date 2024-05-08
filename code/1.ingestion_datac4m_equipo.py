@@ -13,7 +13,7 @@ from io import BytesIO  # Permite trabajar con datos binarios en memoria como si
 #SECCION 1: EXTRACCION DE DATOS POR EQUIPO
 
 # 1. Extraccion de datos Fuente C4M (Datos por equipo)
-# Llamar a la función para ejecutar la consulta y obtener el DataFrame 
+# Llamar a la función para ejecutar la consulta y obtener el DataFrame
 
 ####### !IMPORTANTE!: INGRESAR ID_EQUIPO A EXTRAER  ##########################################################
 datos_equipo = consultar_postgres_y_obtener_df_c4m(61)
@@ -22,13 +22,13 @@ datos_equipo = consultar_postgres_y_obtener_df_c4m(61)
 
 # 1.Guardamos el df en csv en la variable csv_data
 #csv_data = datos_equipo.to_csv(index=False)
-# 1.Guardar el df en formato Parquet en la variable parquet_data
+# 1.Guardar el df en formato Parquet en la variable parquet_data (formato de archivo columnar)
 parquet_data = datos_equipo.to_parquet(engine='pyarrow')
 
 # csv_data_199 = datos_equipo_199.to_csv(index=False)
 # csv_data_201 = datos_equipo_201.to_csv(index=False)
 
-# 1.2 Obtener conection Azure DataLake,interfaz de Azure(Claves de acceso: Key1) (Debes comentar esta variable Si NO deja hacer COMMIT DEL 
+# 1.2 Obtener conection Azure DataLake,interfaz de Azure(Claves de acceso: Key1) (Debes comentar esta variable Si NO deja hacer COMMIT DEL
 # CODIGO EN GIT,GITHUB)
 #connection_string = 'DefaultEndpointsProtocol=https;AccountName=datalakemlopsd4m;AccountKey=iWT8t74/#XlqcqoR03keDVtFZPzr0PB9zDffMPaLWMUBIAjUww8uYAVkc9xRkcBtvTmUHKBvd1sB3+ASt6mGgcQ==;EndpointSuffix=core.windows.net'
 

@@ -38,24 +38,24 @@ datos_c4m = pd.read_parquet(io.BytesIO(blob_data_c4m))
 # 4. Identificamos el nombre del contenedor(container_name) y nombre del archivo(definir blob_name) en el Blob Storage
 container_name_h4m = "raw/proyectocongestion_raw/fuentedatos_h4m/operacion_shougang/equipos_consolidado/"
 
-blob_name_h4m = "datos_raw_shougang_h4m.csv"
-#blob_name_h4m = "datos_raw_shougang_h4m.parquet"
+#blob_name_h4m = "datos_raw_shougang_h4m.csv"
+blob_name_h4m = "datos_raw_shougang_h4m.parquet"
 
 # 5. Obtener el blob_client
 blob_client_h4m = blob_service_client.get_blob_client(container=container_name_h4m, blob=blob_name_h4m)
 
-# 6. Leer el contenido del blob como texto
-blob_data_h4m = blob_client_h4m.download_blob().content_as_text()
-# 6. Leer el contenido del blob como un objeto de bytes
-#blob_data_c4m = blob_client_c4m.download_blob().readall()
+# 6. Leer el contenido del blob como texto (en caso sea CSV)
+#blob_data_h4m = blob_client_h4m.download_blob().content_as_text()
+# 6. Leer el contenido del blob como un objeto de bytes (en caso de PARQUET)
+blob_data_h4m = blob_client_h4m.download_blob().readall()
 
 # 7. Leer el archivo CSV en un DataFrame de Pandas desde el texto
-datos_h4m = pd.read_csv(io.StringIO(blob_data_h4m))
+#datos_h4m = pd.read_csv(io.StringIO(blob_data_h4m))
 # 7. Leer el archivo PARQUET en un DataFrame de Pandas desde el texto
-#datos_c4m = pd.read_parquet(io.BytesIO(blob_data_c4m))
+datos_h4m = pd.read_parquet(io.BytesIO(blob_data_h4m))
 
 
-#FORMATO DE FECHAS
+# FORMATO DE FECHAS
 # 8. Convertir a formato datetime, pero quitando la Zona horaria, y solo quedandonos hasta la parte de Segundos
 datos_c4m['instant_date_t'] = pd.to_datetime(datos_c4m['instant_date_t'], errors='coerce', utc=False).dt.tz_localize(None)
 

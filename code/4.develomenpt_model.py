@@ -29,3 +29,5 @@ datos = datos.asfreq(freq='T', method='bfill')
 # 3. Datos Train, Validation, Test
 
 
+
+

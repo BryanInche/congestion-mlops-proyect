@@ -32,7 +32,7 @@ blob_data = blob_client.download_blob().readall()
 
 # 2.5 Especificar tipos de datos al leer el archivo CSV
 column_types = {
-    'instant_date_t': 'datetime64[ns]',
+    'instant_date_t': 'datetime64[ns]' ,
     'Event Date' : 'datetime64[ns]'
 }
 
