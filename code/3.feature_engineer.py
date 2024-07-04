@@ -9,8 +9,19 @@ df_delta = spark.read.format("delta").load("/mnt/datalakemlopsd4m/processed/proy
 datos = df_delta.toPandas()
 
 
-# 2. Seleecion de variables en especifico luego de seleccion de caracteristicas (Correlacion, variables significaticas)
+# 2. Limpieza de variables No prioritarias
+columnas_a_eliminar = ['LT_F_BRK_TEMP', 'RT_R_WHEEL_SPD', 'LT_R_WHEEL_SPD','Tire_Press_N5','start_time_alert', 'end_time_alert', 'Event_Date']
+
+# 2.1 Filtrar las columnas que existen en el DataFrame
+columnas_existentes = [col for col in columnas_a_eliminar if col in datos.columns]
+
+# 2.2 Verificar si hay columnas para eliminar
+if columnas_existentes:
+    datos.drop(columnas_existentes, axis=1, inplace=True)
+
+# 3. Seleecion de variables en especifico luego de seleccion de caracteristicas (Correlacion, variables significaticas)
 #datos = datos.loc[:, ['x', 'y']]
+
 
 
 # n. Pasos Adicionales
@@ -40,6 +51,4 @@ if spark.catalog.tableExists(nombre_tabla_delta):
 
 # 4.2 Guardar los datos preprocesados en una tabla Delta
 spark_datos.write.format("delta").mode("overwrite").option("mergeSchema", "true").saveAsTable(nombre_tabla_delta)
-
-
 

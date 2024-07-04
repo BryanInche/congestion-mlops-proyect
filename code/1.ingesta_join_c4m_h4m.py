@@ -67,14 +67,14 @@ resultado_c4m_h4m = pd.merge(datos_c4m, datos_h4m, left_on=['nombre', 'instant_d
 #'eq_id', 'id_equipo'
 
 # 11. Contiene las filas que hicieron Match adecuadamente
-resultado_c4m_h4m_filtrado = resultado_c4m_h4m[resultado_c4m_h4m['Event Date'].notnull()]
+#resultado_c4m_h4m_filtrado = resultado_c4m_h4m[resultado_c4m_h4m['Event Date'].notnull()]
 
 # 12. Guardarmos el df en el Azure Storage
 
 # 12.1 Convertimos el df_consolidado en csv en la variable datos_total para enviarlo al Blob Storage Azure
 #datos_total = resultado_c4m_h4m_filtrado.to_csv(index=False)
 # 12.1 Convertimos el df_consolidado en parquet en la variable datos_total para enviarlo al Blob Storage Azure
-datos_total = resultado_c4m_h4m_filtrado.to_parquet(engine='pyarrow')
+datos_total = resultado_c4m_h4m.to_parquet(engine='pyarrow')
 
 # 12.2 Identificamos el nombre del contenedor(container_name) y nombre del archivo(definir blob_name) en el Blob Storage
 container_name_consolidado = "raw/proyectocongestion_raw/fuentedatos_consolidado/"
